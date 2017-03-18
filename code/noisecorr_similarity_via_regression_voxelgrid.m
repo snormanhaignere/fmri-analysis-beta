@@ -7,6 +7,9 @@ function [Gsim, MAT_file] = ...
 % of the response against the a prediction derived from cross-validated linear
 % regression. Divides the analysis up into batches and makes it possible to use
 % slurm to parralize the analysis on openmind. 
+% 
+% 2017-03-18: Added similarity_metric to the file name to which the similarity
+% measures are saved.
 
 if ischar(F)
     load(F, 'F');
@@ -68,7 +71,7 @@ if ~exist(prediction_MAT_file, 'file') || I.overwrite_predictions
 end
 
 % noise-corrected correlations
-MAT_file = [output_directory '/noise_corrected_correlations.mat'];
+MAT_file = [output_directory '/noise_corrected_' I.similarity_metric '.mat'];
 if ~exist(MAT_file, 'file') || I.overwrite_correlations
     
     % load variables from previous step
@@ -102,5 +105,5 @@ Gsim = G;
 Gsim.grid_data{1} = nan(size(Gsim.grid_data{1},1), size(Gsim.grid_data{1},2));
 Gsim.grid_data{2} = nan(size(Gsim.grid_data{2},1), size(Gsim.grid_data{2},2));
 Gsim = matrix2grid(r, Gsim);
-save(MAT_file, '-append', 'Gcorr');
+save(MAT_file, '-append', 'Gsim');
 
