@@ -11,7 +11,6 @@ function MAT_file = sigav_inverse_glm(data_matrix_file, para_file, parameter_fil
 I.onset_delay = 5;
 I.offset_delay = 1;
 I.n_perms = 0;
-I.remove_unspecified_trials = false;
 I.folds = 5;
 I.method = 'ridge';
 I.K = 2.^(-100:100);
@@ -28,8 +27,7 @@ P = glm_default_parameters(P);
 
 [psc, mean_signal, T, voxels_without_NaN] = sigav_data(...
     data_matrix_file,  para_file, parameter_file, ...
-    'onset_delay', I.onset_delay, 'offset_delay', I.offset_delay, ...
-    'remove_unspecified_trials', I.remove_unspecified_trials);
+    'onset_delay', I.onset_delay, 'offset_delay', I.offset_delay);
 n_trials = size(psc,1);
 assert(length(T.onsets) == n_trials);
 

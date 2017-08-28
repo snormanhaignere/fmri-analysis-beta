@@ -10,6 +10,8 @@ function [comp_psc, condition_names, component_names] = ...
 % 2017-01-27: Made pseudoinverse optional (i.e. to make it compatible with
 % inverse analyses), added detrending default parameter, made 0 permutations the
 % default
+% 
+% 2017-03-20: Very minor change: got rid of "remove_unspecified_trials"
 
 % optional arguments
 I.verbose = true;
@@ -46,8 +48,7 @@ if ~component_info.combine_runs_before_fla && component_info.overwrite_first_lev
             'runs', component_info.runs(i), 'plot_surf', false,...
             'plot_reliability', false, ...
             'overwrite_first_level', true, ...
-            'whiten', component_info.whiten, ...
-            'remove_unspecified_trials', component_info.remove_unspecified_trials);
+            'whiten', component_info.whiten);
     end
     component_info.overwrite_first_level = false;
 end
@@ -108,8 +109,14 @@ for k = 1:length(test_info.runs) % loop through runs
     else
         W = comp_weights(:,mask)';
     end
-    comp_psc(k,:,:) = voxel_psc(:,mask) * W;
-    clear W;
+    
+    try
+        comp_psc(k,:,:) = voxel_psc(:,mask) * W;
+        clear W;
+    catch me
+        print_error_message(me);
+        keyboard;
+    end
     
 end
 
@@ -131,7 +138,6 @@ function [beta_one_per_regressor, logP_residual_permtest, component_names] = ...
     'overwrite_first_level', component_info.overwrite_first_level, ...
     'overwrite_second_level', component_info.overwrite_second_level, ...
     'whiten', component_info.whiten, ...
-    'remove_unspecified_trials', component_info.remove_unspecified_trials, ...
     'combine_runs_before_fla', component_info.combine_runs_before_fla);
 
 use_first_level = (length(localizer_runs_to_use) == 1 ...
@@ -179,11 +185,6 @@ end
 if isfield(component_info, 'overwrite') && component_info.overwrite
     component_info.overwrite_first_level = true;
     component_info.overwrite_second_level = true;
-end
-
-% whether or not to remove conditions not specified in the parameter matrix
-if ~isfield(component_info, 'remove_unspecified_trials')
-    component_info.remove_unspecified_trials = false;
 end
 
 % whether or not to combine across runs before performing first level analysis
