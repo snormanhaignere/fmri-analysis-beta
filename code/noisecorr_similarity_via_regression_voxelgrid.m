@@ -10,6 +10,8 @@ function [Gsim, similarity_metric_MAT_file] = ...
 % 
 % 2017-03-18: Added similarity_metric to the file name to which the similarity
 % measures are saved.
+%
+% 2017-08-11: Making within-fold correlation optional
 
 if ischar(F)
     load(F, 'F');
@@ -24,16 +26,27 @@ I.train_folds = min(max(round((size(F,1) / I.test_folds) / 10),2),10);
 I.similarity_metric = 'pearson';
 I.regression_method = 'ridge';
 I.K = [];
-I.use_sbatch = false;
+I.slurm = false;
 I.overwrite_predictions = false;
 I.overwrite_correlations = false;
 I.mem = '8000';
 I.std_feats = true;
+I.demean_feats = true;
 I.batch_size = 1000;
 I.groups = [];
 I.n_perms = 0;
+I.correction_method = 'correlation-based';
+I.regularization_metric = 'unnormalized-squared-error';
+I.noisecorr_regmetric = false;
 I.max_run_time_in_min = num2str(60*10);
+I.within_fold_correlation = true;
+I.only_cross_column_corr = false;
 I = parse_optInputs_keyvalue(varargin, I);
+
+% cannot use correlation-based correction for variance-based metric
+if strcmp(I.similarity_metric, 'demeaned-squared-error')
+    I.correction_method = 'variance-based';
+end
 
 %% Predictions
 
@@ -50,22 +63,29 @@ if ~exist(prediction_MAT_file, 'file') || I.overwrite_predictions
     n_nonempty_vox = size(D,3);
     
     % stim x (rep * voxel)
-    D = reshape(D, n_stim, n_rep  * n_nonempty_vox);
+    if ~I.noisecorr_regmetric
+        D = reshape(D, n_stim, n_rep  * n_nonempty_vox);
+    end
     
     % directory to save results for each voxel
-    directory_to_save_results_for_each_voxel = ...
-        [output_directory '/predictions_individual_voxels'];
-    if ~exist(directory_to_save_results_for_each_voxel, 'dir')
-        mkdir(directory_to_save_results_for_each_voxel);
+    directory_to_save_batch_results = ...
+        [output_directory '/batch_predictions'];
+    if ~exist(directory_to_save_batch_results, 'dir')
+        mkdir(directory_to_save_batch_results);
     end
-    [Yh, folds] = regress_predictions_parallelize_with_slurm(...
-        F, D, I.test_folds, I.regression_method, I.K, I.train_folds, ...
-        directory_to_save_results_for_each_voxel, 'mem', I.mem, ...
-        'std_feats', I.std_feats, 'groups', I.groups, ...
+    [Yh, folds] = regress_predictions_wrapper(...
+        F, D, 'test_folds', I.test_folds, 'train_folds', I.train_folds, ...
+        'method', I.regression_method, 'K', I.K, ...
+        'output_directory', directory_to_save_batch_results, ...
+        'mem', I.mem, 'save_results', true, 'slurm', I.slurm, ...
+        'std_feats', I.std_feats, 'demean_feats', I.demean_feats, ...
+        'groups', I.groups, ...
+        'regularization_metric', I.regularization_metric, ...
+        'noisecorr_regmetric', I.noisecorr_regmetric, ...
+        'correction_method', I.correction_method, ...
         'batch_size', I.batch_size, ...
         'max_run_time_in_min', I.max_run_time_in_min, ...
-        'overwrite', I.overwrite_predictions, 'use_sbatch', I.use_sbatch);
-        
+        'overwrite', I.overwrite_predictions);
     
     save(prediction_MAT_file, 'Yh', 'D', 'folds', 'nonempty_voxels',...
         'n_stim', 'n_rep', 'n_vox', 'n_nonempty_vox');
@@ -77,6 +97,16 @@ end
 % noise-corrected correlations
 similarity_metric_MAT_file = ...
     [output_directory '/noise_corrected_' I.similarity_metric '.mat'];
+
+% delete file if is un-loadable
+if exist(similarity_metric_MAT_file, 'file')
+    try 
+        load(similarity_metric_MAT_file, 'r');
+    catch
+        delete(similarity_metric_MAT_file);
+    end
+end
+
 if ~exist(similarity_metric_MAT_file, 'file') || I.overwrite_correlations
     
     % load variables from previous step
@@ -87,19 +117,26 @@ if ~exist(similarity_metric_MAT_file, 'file') || I.overwrite_correlations
     D = reshape(D, [n_stim, n_rep, n_nonempty_vox]);
     Yh = reshape(Yh, [n_stim, n_rep, n_nonempty_vox]);
     
-    % compute correlation
-    r = nan(n_nonempty_vox,1);
-    n = nan(n_nonempty_vox,1);
-    d = nan(n_nonempty_vox,1);
-    for i = 1:size(D,3);
-        [r(i), n(i), d(i)] = normalized_correlation_within_folds_v2(...
-            D(:,:,i), Yh(:,:,i), folds, 'metric', I.similarity_metric); 
+    if ~I.within_fold_correlation
+        folds = ones(size(folds));
     end
     
-    % remove voxels with too low variance
-    z = log10(d);
-    z = z - max(z);
-    r(z < -4) = NaN;
+    % compute correlation
+    r = nan(n_nonempty_vox,1);
+    for i = 1:size(D,3);
+        switch I.correction_method
+            case 'correlation-based'
+                r(i) = normalized_correlation_within_folds(...
+                    D(:,:,i), Yh(:,:,i), folds, 'metric', I.similarity_metric, ...
+                    'only_cross_column_corr', I.only_cross_column_corr);
+            case 'variance-based'
+                r(i) = noise_corrected_similarity_within_folds(...
+                    D(:,:,i), Yh(:,:,i), folds, 'metric', I.similarity_metric,...
+                    'only_cross_column_cov', I.only_cross_column_corr);
+            otherwise
+                error('Switch statement fell through');
+        end
+    end
     
     % add back in empty voxels as NaNs
     r = fillin_NaN(r, nonempty_voxels, 1);
