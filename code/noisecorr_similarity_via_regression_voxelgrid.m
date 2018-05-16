@@ -55,12 +55,15 @@ I.n_bootstrap_smps = 0;
 I.bstrap_smps = [];
 I.noise_correct = true;
 I.G_test = struct([]);
+I.average_before_combining_terms = true;
 I = parse_optInputs_keyvalue(varargin, I);
 
 % cannot use correlation-based correction for variance-based metric
 if any(strcmp(I.similarity_metric, {'demeaned-squared-error', 'normalized-squared-error'}))
     I.correction_method = 'variance-based';
 end
+
+keyboard;
 
 %% Predictions
 
@@ -119,6 +122,10 @@ else
     error('Need to finish implementing this code without noise correction');
 end
 
+if ~I.average_before_combining_terms
+    similarity_metric_MAT_file = strrep(similarity_metric_MAT_file, '.mat', '_comb-within-folds.mat');
+end
+
 % delete file if is un-loadable
 if exist(similarity_metric_MAT_file, 'file')
     try 
@@ -150,17 +157,19 @@ if ~exist(similarity_metric_MAT_file, 'file') || I.overwrite_correlations
     
     % compute correlation
     r = nan(n_nonempty_vox,1);
-    for i = 1:size(D,3);
+    for i = 1:size(D,3)
         if I.noise_correct
             switch I.correction_method
                 case 'correlation-based'
+                    assert(I.average_before_combining_terms);
                     r(i) = normalized_correlation_within_folds(...
                         D_test(:,:,i), Yh(:,:,i), folds, 'metric', I.similarity_metric, ...
                         'only_cross_column_corr', I.only_cross_column_corr);
                 case 'variance-based'
                     r(i) = noise_corrected_similarity_within_folds(...
                         D_test(:,:,i), Yh(:,:,i), folds, 'metric', I.similarity_metric,...
-                        'only_cross_column_cov', I.only_cross_column_corr);
+                        'only_cross_column_cov', I.only_cross_column_corr, ...
+                        'average_before_combining_terms', I.average_before_combining_terms);
                 otherwise
                     error('Switch statement fell through');
             end
@@ -228,10 +237,11 @@ if I.n_bootstrap_smps > 0
             if mod(j, round(I.n_bootstrap_smps/50))==0
                 fprintf('Sample %d\n', j); drawnow;
             end
-            for i = 1:size(D,3);
+            for i = 1:size(D,3)
                 if I.noise_correct
                     switch I.correction_method
                         case 'correlation-based'
+                            assert(I.average_before_combining_terms);
                             r_bootstrap(j,i) = normalized_correlation_within_folds(...
                                 D(I.bstrap_smps(:,j),:,i), Yh(I.bstrap_smps(:,j),:,i), folds(I.bstrap_smps(:,j)), ...
                                 'metric', I.similarity_metric, ...
@@ -240,7 +250,8 @@ if I.n_bootstrap_smps > 0
                             r_bootstrap(j,i) = noise_corrected_similarity_within_folds(...
                                 D(I.bstrap_smps(:,j),:,i), Yh(I.bstrap_smps(:,j),:,i), folds(I.bstrap_smps(:,j)), ...
                                 'metric', I.similarity_metric,...
-                                'only_cross_column_cov', I.only_cross_column_corr);
+                                'only_cross_column_cov', I.only_cross_column_corr, ...
+                                'average_before_combining_terms', I.average_before_combining_terms);
                         otherwise
                             error('Switch statement fell through');
                     end
