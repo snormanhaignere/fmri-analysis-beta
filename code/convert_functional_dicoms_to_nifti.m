@@ -1,12 +1,19 @@
 function convert_functional_dicoms_to_nifti(exp, us, runtype, r, varargin)
 
 % 2016-08-27: Modified how optional arguments are handled
+% 
+% 2018-03-23: Added debug mode
 
 global root_directory
 
 % optional arguments and defaults
 I.overwrite = false;
+I.keyboard = false;
 I = parse_optInputs_keyvalue(varargin, I);
+
+if I.keyboard
+    keyboard;
+end
 
 data_directory = [root_directory '/' exp '/data/'];
 

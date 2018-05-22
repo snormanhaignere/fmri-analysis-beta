@@ -5,6 +5,9 @@ if optInputs(varargin, 'nohup')
 end
 
 switch version
+    case 'openmind-5.0.6'
+        fprintf(['/usr/bin/fsl5.0-' command '\n']);
+        [~,y] = unix(['/usr/bin/fsl5.0-' command]);
     case '5.0'
         fprintf(['/usr/bin/fsl5.0-' command '\n']);
         [~,y] = unix(['/usr/bin/fsl5.0-' command]);

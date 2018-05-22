@@ -63,8 +63,6 @@ if any(strcmp(I.similarity_metric, {'demeaned-squared-error', 'normalized-square
     I.correction_method = 'variance-based';
 end
 
-keyboard;
-
 %% Predictions
 
 prediction_MAT_file = [output_directory '/predictions.mat'];
@@ -147,6 +145,7 @@ if ~exist(similarity_metric_MAT_file, 'file') || I.overwrite_correlations
     else
         D_test = reshape(D, [n_stim, n_rep, n_nonempty_vox]);
     end
+    clear D;
     
     % separate out reps / voxels into different dimensions
     Yh = reshape(Yh, [n_stim, n_rep, n_nonempty_vox]);
@@ -157,7 +156,7 @@ if ~exist(similarity_metric_MAT_file, 'file') || I.overwrite_correlations
     
     % compute correlation
     r = nan(n_nonempty_vox,1);
-    for i = 1:size(D,3)
+    for i = 1:n_nonempty_vox
         if I.noise_correct
             switch I.correction_method
                 case 'correlation-based'
@@ -237,7 +236,7 @@ if I.n_bootstrap_smps > 0
             if mod(j, round(I.n_bootstrap_smps/50))==0
                 fprintf('Sample %d\n', j); drawnow;
             end
-            for i = 1:size(D,3)
+            for i = 1:n_nonempty_vox
                 if I.noise_correct
                     switch I.correction_method
                         case 'correlation-based'

@@ -84,9 +84,9 @@ end
 % anova_surf_subjrecon = [sladir hemi '.' 'anova_' sprintf('%s',condlevels{:}) '_fwhm0_projfrac' num2str(projfrac(1)) '-' num2str(projfrac(2)) '_trilinear_' runtype '_r' sprintf('%d',runnum) '_' model  '_' params('smooth') 'mm.mgz'];
 
 if optInputs(varargin, 'cluscorr')
-    anova_surf = ['~/freesurfer/fsaverage/sla/' subjid '/' hemi '.' 'anova_' sprintf('%s',condlevels{:}) '_cluscorr_fwhm' num2str(fwhm) '_projfrac' num2str(projfrac(1)) '-' num2str(projfrac(2)) '_trilinear_' runtype '_r' sprintf('%d',runnum) '_' model  '_' num2str(fwhm_vol*100,'%.0f') 'mm.mgz'];
+    anova_surf = [root_directory '/freesurfer/fsaverage/sla/' subjid '/' hemi '.' 'anova_' sprintf('%s',condlevels{:}) '_cluscorr_fwhm' num2str(fwhm) '_projfrac' num2str(projfrac(1)) '-' num2str(projfrac(2)) '_trilinear_' runtype '_r' sprintf('%d',runnum) '_' model  '_' num2str(fwhm_vol*100,'%.0f') 'mm.mgz'];
 else
-    anova_surf = ['~/freesurfer/fsaverage/sla/' subjid '/' hemi '.' 'anova_' sprintf('%s',condlevels{:}) '_fwhm' num2str(fwhm) '_projfrac' num2str(projfrac(1)) '-' num2str(projfrac(2)) '_trilinear_' runtype '_r' sprintf('%d',runnum) '_' model  '_' num2str(fwhm_vol*100,'%.0f') 'mm.mgz'];
+    anova_surf = [root_directory '/freesurfer/fsaverage/sla/' subjid '/' hemi '.' 'anova_' sprintf('%s',condlevels{:}) '_fwhm' num2str(fwhm) '_projfrac' num2str(projfrac(1)) '-' num2str(projfrac(2)) '_trilinear_' runtype '_r' sprintf('%d',runnum) '_' model  '_' num2str(fwhm_vol*100,'%.0f') 'mm.mgz'];
 end
 if ~exist(anova_surf,'file') || optInputs(varargin,'overwrite')
     if optInputs(varargin, 'cluscorr')

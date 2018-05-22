@@ -31,7 +31,7 @@ function [patch_handle, light_handle] = plot_fsaverage_colordata_overlay(colorda
 
 % read vertices and faces
 % nvertices = 163842; 
-[vertices, faces] = freesurfer_read_surf(ref_image);
+[vertices, faces] = freesurfer_read_surf([root_directory '/' 'freesurfer/myfsaverage/surf/' hemi '.inflated']);
 
 % create figure of specified size
 if  nargin < 3 || isempty(figh)

@@ -54,6 +54,13 @@ tmp = ['us' num2str(us) '-r' num2str(r)];
 exfunc2orig_freesurf = [handtune_reg_dir 'example_func2orig.dat'];
 unix_freesurfer_version( freesurfer_version, ['tkregister2 --s ' subjid ' --mov ' exfunc ' --targ ' orig ' --reg ' exfunc2orig_freesurf ' --title ' tmp ' --surf']);
 
+% freesurfer_version = '5.3.0';
+% func = '/mindhive/nklab/u/svnh/tla_matlab/all_pitchloc7_70-75-80dB_pitch_localizer_monkey_373_pitchloc7_70-75-80dB_combined_split_allruns_100perms_100smps_volume_downsampled_hash3e64cfb3a92643baef8e992be46e1cc1/pstat_permutation_100_gaussfit.nii.gz';
+% orig = '/mindhive/nklab/u/svnh/freesurfer/pitch_localizer_monkey_us373/mri/orig.mgz';
+% reg = '/mindhive/nklab/u/svnh/emptyreg.dat';
+% command = ['tkregister2 --s  pitch_localizer_monkey_us373 --mov ' func ' --targ ' orig ' --reg ' reg ' --regheader --surf'];
+% unix_freesurfer_version( freesurfer_version, command );
+
 %% Create auxillary registration files based on hand-tuned registration
 
 % exfunc -> orig in fsl format

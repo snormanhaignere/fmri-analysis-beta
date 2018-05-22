@@ -67,10 +67,14 @@ clear xi t nTR;
 
 % mean response to null
 % -> 1 x voxels
-xi = strcmp('NULL', T.conds);
-assert(sum(xi) > 0);
-null_response = mean(response(xi,:),1);
-clear xi;
+try
+    xi = strcmp('NULL', T.conds);
+    assert(sum(xi) > 0);
+    null_response = mean(response(xi,:),1);
+    clear xi;
+catch
+    keyboard
+end
 
 %% Remove trials without corresponding condition, except for NULL trials
 
