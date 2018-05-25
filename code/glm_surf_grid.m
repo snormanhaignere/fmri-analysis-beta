@@ -48,7 +48,7 @@ I.whiten = false;
 I.renderer = 'opengl';
 I.combine_runs_before_fla = false;
 I.keyboard = false;
-I = parse_optInputs_keyvalue(varargin, I);
+[I, C] = parse_optInputs_keyvalue(varargin, I, 'empty_means_unspecified', true);
 if I.overwrite
     I.overwrite_first_level = true;
     I.overwrite_second_level = true;
@@ -58,14 +58,25 @@ if I.keyboard
     keyboard;
 end
 
+%% String identifying the parameters of this analysis
+
+param_idstring = ['fsaverage_smooth-' num2str(fwhm) 'mm' ...
+    '_' 'grid-' num2str(grid_spacing_mm) 'mm_' grid_roi];
+
+if ~isempty(strfind(I.analysis_type, 'sigav')) && C.onset_delay
+    param_idstring = [param_idstring '_ons' num2str(I.onset_delay)];
+end
+
+if ~isempty(strfind(I.analysis_type, 'sigav')) && C.offset_delay
+    param_idstring = [param_idstring '_off' num2str(I.offset_delay)];
+end
+
 %% Directories / setup
 
 % analysis directory
 analysis_directory = [root_directory  '/' exp '/analysis' ...
     '/' I.analysis_type '/' analysis_name ...
-    '/fsaverage_smooth-' num2str(fwhm) 'mm' ...
-    '_' 'grid-' num2str(grid_spacing_mm) 'mm' ...
-    '_' grid_roi '/usub' num2str(us)];
+    '/' param_idstring '/usub' num2str(us)];
 
 % condition weight file
 parameter_file = [root_directory '/' exp '/analysis/' I.analysis_type ...
