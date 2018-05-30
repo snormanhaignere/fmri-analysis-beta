@@ -70,6 +70,7 @@ if ~exist(prediction_MAT_file, 'file') || I.overwrite_predictions
     
     % stimuli x rep x voxel
     D = grid2matrix(G);
+    assert(ndims(D)==3);
     [n_stim, n_rep, n_vox] = size(D); %#ok<ASGLU>
     
     % remove zero or NaN voxels
