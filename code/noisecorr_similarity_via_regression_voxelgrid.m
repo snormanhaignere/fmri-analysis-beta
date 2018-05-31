@@ -55,6 +55,7 @@ I.n_bootstrap_smps = 0;
 I.bstrap_smps = [];
 I.noise_correct = true;
 I.G_test = struct([]);
+I.F_test = [];
 I.average_before_combining_terms = true;
 I = parse_optInputs_keyvalue(varargin, I);
 
@@ -101,7 +102,8 @@ if ~exist(prediction_MAT_file, 'file') || I.overwrite_predictions
         'correction_method', I.correction_method, ...
         'batch_size', I.batch_size, ...
         'max_run_time_in_min', I.max_run_time_in_min, ...
-        'overwrite', I.overwrite_predictions);
+        'overwrite', I.overwrite_predictions, ...
+        'F_test', I.F_test);
     
     % save results
     save(prediction_MAT_file, 'Yh', 'D', 'folds', 'nonempty_voxels',...
