@@ -24,12 +24,15 @@ function MAT_file = sigav_glm(data_matrix_file, para_file, parameter_file, ...
 % Sam NH
 %
 % 2017-02-24: remove_unspecified_conditions no longer needed and removed
+% 
+% 2018-05-30: Add an optional tsnr threshold
 
 % optional arguments and defaults
 I.onset_delay = 5;
 I.offset_delay = 1;
 I.n_perms = 0;
 I.whiten = false;
+I.tsnr_threshold = 0;
 I = parse_optInputs_keyvalue(varargin, I);
 
 % analysis parameters
@@ -40,7 +43,8 @@ P = glm_default_parameters(P);
 
 [psc, mean_signal, T, voxels_without_NaN, null_response] = sigav_data(...
     data_matrix_file, para_file, parameter_file, ...
-    'onset_delay', I.onset_delay, 'offset_delay', I.offset_delay);
+    'onset_delay', I.onset_delay, 'offset_delay', I.offset_delay, ...
+    'tsnr_threshold', I.tsnr_threshold);
 n_trials = size(psc,1);
 assert(length(T.onsets) == n_trials);
 

@@ -48,6 +48,7 @@ I.whiten = false;
 I.renderer = 'opengl';
 I.combine_runs_before_fla = false;
 I.keyboard = false;
+I.tsnr_threshold = 0;
 [I, C] = parse_optInputs_keyvalue(varargin, I, 'empty_means_unspecified', true);
 if I.overwrite
     I.overwrite_first_level = true;
@@ -69,6 +70,10 @@ end
 
 if ~isempty(strfind(I.analysis_type, 'sigav')) && C.offset_delay
     param_idstring = [param_idstring '_off' num2str(I.offset_delay)];
+end
+
+if C.tsnr_threshold
+    param_idstring = [param_idstring '_tsnr' num2str(I.tsnr_threshold)];
 end
 
 %% Directories / setup
@@ -263,7 +268,7 @@ for i = 1:n_run_sets
                 glm_event_regression(data_matrix_files{i}, para_files{i}, ...
                     parameter_file, MAT_files_first_level{i}, ...
                     'n_perms', I.n_perms, 'nuissance_regressor_file', ...
-                    nuissance_regressor_file);
+                    nuissance_regressor_file, 'tsnr_threshold', I.tsnr_threshold);
                 
             case 'sigav-glm'
                 
@@ -273,7 +278,7 @@ for i = 1:n_run_sets
                 sigav_glm(data_matrix_files{i}, para_files{i}, ...
                     parameter_file, MAT_files_first_level{i}, ...
                     'onset_delay', I.onset_delay, 'offset_delay', I.offset_delay,...
-                    'n_perms', I.n_perms, 'whiten', I.whiten);
+                    'n_perms', I.n_perms, 'whiten', I.whiten, 'tsnr_threshold', I.tsnr_threshold);
                 
             case 'sigav-inverse-glm'
                 
@@ -283,7 +288,7 @@ for i = 1:n_run_sets
                 sigav_inverse_glm(data_matrix_files{i}, para_files{i}, ...
                     parameter_file, MAT_files_first_level{i}, ...
                     'onset_delay', I.onset_delay, 'offset_delay', I.offset_delay,...
-                    'n_perms', I.n_perms);
+                    'n_perms', I.n_perms, 'tsnr_threshold', I.tsnr_threshold);
                 
             otherwise
                 error('No matching case for analysis type "%s"\n', I.analysis_type);

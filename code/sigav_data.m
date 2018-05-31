@@ -13,11 +13,16 @@ function [psc, mean_signal, T, voxels_without_NaN, null_response] = ...
 % 2017-01-12: Created, Sam NH
 % 
 % 2017-02-04: Unspecified conditions are always removed, except for NULL
+% 
+% 2018-05-28: Exclude voxels with mean timecourse near zero.
+% 
+% 2018-05-30: Add an optional tsnr threshold
 
 % optional arguments and defaults
 I.onset_delay = 5;
 I.offset_delay = 1;
 I.n_perms = 0;
+I.tsnr_threshold = 30;
 I = parse_optInputs_keyvalue(varargin, I);
 
 % analysis parameters
@@ -32,8 +37,13 @@ load(data_matrix_file, 'data_matrix', 'TR');
 Y = data_matrix;
 clear data_matrix;
 
+% temporal SNR
+tsnr = mean(Y,1) ./ std(Y,[],1);
+
 % remove voxels with NaN values
-voxels_without_NaN = all(~isnan(Y));
+assert(max(mean(Y,1))>10);
+assert(all(Y(~isnan(Y))>=0));
+voxels_without_NaN = all(~isnan(Y)) & (mean(Y,1) > 1e-10) & (tsnr > I.tsnr_threshold);
 Y = Y(:,voxels_without_NaN);
 n_voxels_without_NaN = sum(voxels_without_NaN);
 
@@ -67,14 +77,10 @@ clear xi t nTR;
 
 % mean response to null
 % -> 1 x voxels
-try
-    xi = strcmp('NULL', T.conds);
-    assert(sum(xi) > 0);
-    null_response = mean(response(xi,:),1);
-    clear xi;
-catch
-    keyboard
-end
+xi = strcmp('NULL', T.conds);
+assert(sum(xi) > 0);
+null_response = mean(response(xi,:),1);
+clear xi;
 
 %% Remove trials without corresponding condition, except for NULL trials
 

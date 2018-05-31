@@ -17,3 +17,8 @@ end
 if ~isfield(test_info, 'overwrite')
     test_info.overwrite = false;
 end
+
+% by default no tsnr threshold
+if ~isfield(test_info, 'tsnr_threshold')
+    test_info.tsnr_threshold = 0;
+end

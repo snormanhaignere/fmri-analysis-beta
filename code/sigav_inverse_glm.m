@@ -6,6 +6,8 @@ function MAT_file = sigav_inverse_glm(data_matrix_file, para_file, parameter_fil
 % response. Ridge is used to regularize the solution. 
 % 
 % 2017-01-12: Started coding, Sam NH
+% 
+% 2018-05-30: Added optional tSNR threshold
 
 % optional arguments and defaults
 I.onset_delay = 5;
@@ -17,6 +19,7 @@ I.K = 2.^(-100:100);
 I.std_feats = false;
 I.demean_feats = false;
 I.rand_seed_for_trial_order = 1;
+I.tsnr_threshold = 0;
 I = parse_optInputs_keyvalue(varargin, I);
 
 % analysis parameters
@@ -27,7 +30,8 @@ P = glm_default_parameters(P);
 
 [psc, mean_signal, T, voxels_without_NaN] = sigav_data(...
     data_matrix_file,  para_file, parameter_file, ...
-    'onset_delay', I.onset_delay, 'offset_delay', I.offset_delay);
+    'onset_delay', I.onset_delay, 'offset_delay', I.offset_delay, ...
+    'tsnr_threshold', I.tsnr_threshold);
 n_trials = size(psc,1);
 assert(length(T.onsets) == n_trials);
 

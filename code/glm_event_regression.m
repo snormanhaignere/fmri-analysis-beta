@@ -52,7 +52,9 @@ function glm_event_regression(...
 % 2016-09-10: Made residual permutation test one-tailed
 % 
 % 2016-09-21: Modified to deal with zero regressors and contrasts, Sam NH
-
+% 
+% 2018-05-30: Add an optional tsnr threshold (also removed very low voxel
+% values)
 
 %% Outside directories
 
@@ -74,7 +76,9 @@ Y = data_matrix;
 clear data_matrix;
 
 % remove voxels with NaN values
-voxels_without_NaN = all(~isnan(Y));
+assert(max(mean(Y,1))>10);
+assert(all(Y(~isnan(Y))>=0));
+voxels_without_NaN = all(~isnan(Y)) & (mean(Y,1) > 1e-10) & (tsnr > I.tsnr_threshold);
 Y = Y(:,voxels_without_NaN);
 
 % re-scale voxels to have mean 100
