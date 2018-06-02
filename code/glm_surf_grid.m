@@ -49,6 +49,7 @@ I.renderer = 'opengl';
 I.combine_runs_before_fla = false;
 I.keyboard = false;
 I.tsnr_threshold = 0;
+I.grid_flag = '';
 [I, C] = parse_optInputs_keyvalue(varargin, I, 'empty_means_unspecified', true);
 if I.overwrite
     I.overwrite_first_level = true;
@@ -74,6 +75,10 @@ end
 
 if C.tsnr_threshold
     param_idstring = [param_idstring '_tsnr' num2str(I.tsnr_threshold)];
+end
+
+if ~isempty(I.grid_flag)
+    param_idstring = [param_idstring '_' I.grid_flag];
 end
 
 %% Directories / setup
@@ -188,6 +193,9 @@ for i = 1:n_run_sets
     grid_file = [preproc_fsaverage_directory '/' ...
         'smooth-' num2str(fwhm) 'mm' '_' ...
         'grid-' num2str(grid_spacing_mm) 'mm' '_' grid_roi '.mat'];
+    if ~isempty(I.grid_flag)
+        grid_file = strrep(grid_file, '.mat', ['_' I.grid_flag '.mat']);
+    end
     
     % reformated data matrix to use as input to the GLM analysis below
     data_matrix_files{i} = ...
