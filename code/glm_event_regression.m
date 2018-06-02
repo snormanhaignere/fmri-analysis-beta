@@ -77,7 +77,6 @@ clear data_matrix;
 
 % remove voxels with NaN values
 assert(max(mean(Y,1))>10);
-assert(all(Y(~isnan(Y))>=0));
 voxels_without_NaN = all(~isnan(Y)) & (mean(Y,1) > 1e-10) & (tsnr > I.tsnr_threshold);
 Y = Y(:,voxels_without_NaN);
 
