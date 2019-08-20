@@ -6,6 +6,8 @@ function [voxel_psc, condition_names] = psc_single_run(...
 % 2016-09-02: Separated out from roi_surf_grid.m, Sam NH
 % 
 % 2016-09-09: Including sigav-glm and incorporating with standard GLM analysis
+% 
+% 2019-08-10: Updated to include onset / offset delay
 
 switch test_info.analysis_type
     case 'sigav'
@@ -30,7 +32,9 @@ switch test_info.analysis_type
             'analysis_type', test_info.analysis_type, ...
             'runs', test_run, 'overwrite', test_info.overwrite, ...
             'plot_surf', false, 'plot_reliability', false, ...
-            'tsnr_threshold', test_info.tsnr_threshold);
+            'tsnr_threshold', test_info.tsnr_threshold, ...
+            'onset_delay', test_info.onset_delay, ...
+            'offset_delay', test_info.offset_delay);
         
         assert(length(MAT_file_first_level)==1);
         load(MAT_file_first_level{1}, 'beta_one_per_regressor','P');

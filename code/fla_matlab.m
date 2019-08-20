@@ -1793,7 +1793,6 @@ if optInputs(varargin, 'reg2highres') && strcmp(volume_or_surface,'volume')
     end
 end
 
-close all;
 %% Old Code
 
 

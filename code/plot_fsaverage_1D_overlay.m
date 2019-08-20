@@ -142,4 +142,5 @@ for i = 1:5
         colorbar_labels_str{i} = sprintf('%.2f',colorbar_labels_num(i));
     end
 end
-set(colorbar_handle, 'XTick', linspace(0,1,5), 'XTickLabel', colorbar_labels_str,'FontSize',20,'Position',[0.1469 0.05 0.7438 0.0312]);
+ca = caxis;
+set(colorbar_handle, 'XTick', linspace(ca(1),ca(2),5), 'XTickLabel', colorbar_labels_str,'FontSize',20,'Position',[0.1469 0.05 0.7438 0.0312]);

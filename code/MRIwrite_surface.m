@@ -10,7 +10,7 @@ if length(dims) > 2
     error('Data should be two dimensional');
 end
 
-if dims(2) > dims(1);
+if dims(2) > dims(1)
     data = data';
     dims = size(data);
 end

@@ -50,6 +50,7 @@ I.combine_runs_before_fla = false;
 I.keyboard = false;
 I.tsnr_threshold = 0;
 I.grid_flag = '';
+I.write_surf_file = false;
 [I, C] = parse_optInputs_keyvalue(varargin, I, 'empty_means_unspecified', true);
 if I.overwrite
     I.overwrite_first_level = true;
@@ -437,9 +438,9 @@ for i = 1:n_maps
         try
             % save to file
             switch I.stat_to_plot
-                case {'logP_ols', 'beta_contrast'};
+                case {'logP_ols', 'beta_contrast'}
                     fname_substring = [P.contrast_names{i}];
-                case {'logP_permtest'};
+                case {'logP_permtest'}
                     fname_substring = [P.contrast_names{i} '_' num2str(I.n_perms) 'perms'];
                 case {'beta_one_per_regressor'}
                     fname_substring = [P.regressor_names{i}];
@@ -452,6 +453,13 @@ for i = 1:n_maps
                 fname_substring '_' hemis{q} '_colrange_' ...
                 num2str(color_range(1)) '_' num2str(color_range(2)) '.png'];
             export_fig(figure_file,'-png','-r100','-nocrop');
+            
+            if I.write_surf_file
+                surf_file = [figure_directory '/' runtype '_pmap_' I.stat_to_plot '_' ...
+                    fname_substring '_' hemis{q} '.mgh'];
+                MRIwrite_surface(surf(:,q,i), surf_file, hemis{q});
+            end
+            
         catch me
             print_error_message(me);
             keyboard;

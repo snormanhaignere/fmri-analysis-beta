@@ -11,6 +11,8 @@ function [psc, condition_names, n_voxels_per_run_and_threshold] = ...
 %
 % 2017-01-09: Modified to accomodate combining data across runs in the first
 % level analysis
+% 
+% 2019-08-10: Updated to include onset / offset delay
 
 I.verbose = true;
 I.anatomical_mask = '';
@@ -203,7 +205,9 @@ function loc_stat = localizer_stat(...
     'n_perms', localizer_info.n_perms, ...
     'runs', localizer_runs_to_use, 'plot_surf', false,...
     'plot_reliability', false, 'overwrite', localizer_info.overwrite, ...
-    'combine_runs_before_fla', localizer_info.combine_runs_before_fla);
+    'combine_runs_before_fla', localizer_info.combine_runs_before_fla, ...
+    'onset_delay', localizer_info.onset_delay, ...
+    'offset_delay', localizer_info.offset_delay);
 
 use_first_level = (length(localizer_runs_to_use) == 1 ...
     || localizer_info.combine_runs_before_fla);
@@ -280,6 +284,14 @@ for j = 1:n_localizers
     
     if ~isfield(localizer_info(j), 'combine_runs_before_fla')
         localizer_info(j).combine_runs_before_fla = false;
+    end
+    
+    if ~isfield(localizer_info(j), 'onset_delay')
+        localizer_info(j).onset_delay = 5;
+    end
+    
+    if ~isfield(localizer_info(j), 'offset_delay')
+        localizer_info(j).offset_delay = 1;
     end
     
 end

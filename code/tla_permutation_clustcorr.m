@@ -199,9 +199,10 @@ if  ~exist(p_cluster_thresh_file, 'file') || optInputs(varargin, 'overwrite')
                 
                 % number of surface points on the fsaverage template brain
                 if optInputs(varargin, 'monkey')
-                    nsurfpts_monkeys = [157 143689 143035; 158 134082 135694; 170 83802 83075];
-                    xi = ismember(nsurfpts_monkeys(:,1), P(1).us);
-                    nsurfpts = nsurfpts_monkeys(xi,j+1);
+                    %                     nsurfpts_monkeys = [157 143689 143035; 158 134082 135694; 170 83802 83075];
+                    %                     xi = ismember(nsurfpts_monkeys(:,1), P(1).us);
+                    %                     nsurfpts = nsurfpts_monkeys(xi,j+1);
+                    nsurfpts = nvertices_freesurfer(subjid, P(1).us, hemis{q});
                 else
                     % number of surface points on the fsaverage template brain
                     nsurfpts = 163842;
