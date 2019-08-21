@@ -26,6 +26,10 @@ function [MAT_file_second_level, MAT_files_first_level, ...
 % inverse glm analyses, regressing voxels against a predicted response.
 %
 % 2017-02-24: Flag 'remove_unspecified_conditions' removed
+% 
+% 2019-08-20: Added ability to measure multiple timepoints in between onset
+% and offset so as to measure a signal averaged timecourse (only for
+% sigav-glm)
 
 global root_directory;
 
@@ -51,6 +55,7 @@ I.keyboard = false;
 I.tsnr_threshold = 0;
 I.grid_flag = '';
 I.write_surf_file = false;
+I.n_tps = 1;
 [I, C] = parse_optInputs_keyvalue(varargin, I, 'empty_means_unspecified', true);
 if I.overwrite
     I.overwrite_first_level = true;
@@ -80,6 +85,10 @@ end
 
 if ~isempty(I.grid_flag)
     param_idstring = [param_idstring '_' I.grid_flag];
+end
+
+if C.n_tps
+    param_idstring = [param_idstring '_ntps' num2str(I.n_tps)];
 end
 
 %% Directories / setup
@@ -255,6 +264,7 @@ for i = 1:n_run_sets
             case 'glm'
                 
                 fprintf('GLM...\n'); drawnow;
+                assert(I.n_tps == 1);
                 
                 % add white matter regressors
                 X_nuissance = [];
@@ -287,12 +297,15 @@ for i = 1:n_run_sets
                 sigav_glm(data_matrix_files{i}, para_files{i}, ...
                     parameter_file, MAT_files_first_level{i}, ...
                     'onset_delay', I.onset_delay, 'offset_delay', I.offset_delay,...
-                    'n_perms', I.n_perms, 'whiten', I.whiten, 'tsnr_threshold', I.tsnr_threshold);
+                    'n_perms', I.n_perms, 'whiten', I.whiten, ...
+                    'tsnr_threshold', I.tsnr_threshold, ...
+                    'n_tps', I.n_tps);
                 
             case 'sigav-inverse-glm'
                 
                 fprintf('Signal averaging/Inverse GLM...\n'); drawnow;
-                
+                assert(I.n_tps == 1);
+
                 % first level regression
                 sigav_inverse_glm(data_matrix_files{i}, para_files{i}, ...
                     parameter_file, MAT_files_first_level{i}, ...
@@ -378,6 +391,8 @@ end
 if ~I.plot_surf
     return;
 end
+
+assert(I.n_tps == 1);
 
 % select first or second level analysis
 if ~isempty(MAT_file_second_level)

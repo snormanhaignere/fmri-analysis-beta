@@ -13,6 +13,9 @@ function [psc, condition_names, n_voxels_per_run_and_threshold] = ...
 % level analysis
 % 
 % 2019-08-10: Updated to include onset / offset delay
+% 
+% 2019-08-20: Added ability to measure multiple timepoints in between onset
+% and offset so as to measure a signal averaged timecourse
 
 I.verbose = true;
 I.anatomical_mask = '';
@@ -44,7 +47,7 @@ for k = 1:length(test_info.runs) % loop through runs
     end
     
     % matrix of psc values for each voxels
-    % condition x voxel matrix
+    % condition x voxel x time matrix
     [voxel_psc, condition_names] = ...
         psc_single_run(test_info, us, test_info.runs(k), ...
         fwhm, grid_spacing_mm, grid_roi);
@@ -132,7 +135,7 @@ for k = 1:length(test_info.runs) % loop through runs
         % remove NaN voxels
         % logical all is applied to conditions for each voxel
         voxels_in_roi = find(...
-            any(~isnan(voxel_psc),1) ...
+            any(any(~isnan(voxel_psc),3),1) ...
             & all(~isnan(localizer_contrast_stat_matrix),1) ...
             & mask);
         
@@ -172,22 +175,22 @@ for k = 1:length(test_info.runs) % loop through runs
         % runs x conditions x thresholds
         if k == 1 && i == 1
             psc = nan([ length(test_info.runs), length(condition_names), ...
-                n_thresholds_per_localizer ]);
+                n_thresholds_per_localizer, test_info.n_tps ]);
         end
         
         % average PSC values within selected voxels
-        psc(k,:,threshold_indices{:}) = mean(voxel_psc(:, voxels_in_roi), 2);
+        psc(k,:,threshold_indices{:},:) = mean(voxel_psc(:, voxels_in_roi, :), 2);
         
     end
 end
 
 % remove single dimensions for the thresholds
 n_thresh_dim = setdiff(n_thresholds_per_localizer,1);
-if isempty(n_thresh_dim);
+if isempty(n_thresh_dim)
     n_thresh_dim = 1;
 end
 psc = reshape(psc, ...
-    [length(test_info.runs), length(condition_names), n_thresh_dim]);
+    [length(test_info.runs), length(condition_names), n_thresh_dim, test_info.n_tps]);
 n_voxels_per_run_and_threshold = reshape(...
     n_voxels_per_run_and_threshold, [length(test_info.runs), n_thresh_dim]);
 

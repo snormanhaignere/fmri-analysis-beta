@@ -17,6 +17,8 @@ function second_level_ols(MAT_files_first_level, MAT_file_second_level, varargin
 % 2017-02-24: Removed data_matrix_files and para_files which weren't used
 % 
 % 2017-02-24: Removed permutation test, moved to second_level_permtest.m
+% 
+% 2019-08-20: Minor change to accomodate multiple timepoints
 
 % number of total runs
 n_runs = length(MAT_files_first_level);
@@ -38,13 +40,13 @@ for i = 1:n_runs
         contrast_variance_allruns = nan([n_runs, size(X.contrast_variance)]);
         residual_allruns = nan([n_runs, size(X.residual)]);
         dfs = nan(n_runs,1);
-        P = X.P;  %#ok<NASGU>
+        P = X.P;
     end
     try
-        beta_contrast_allruns(i,:,:) = X.beta_contrast;
-        beta_one_per_regressor_allruns(i,:,:) = X.beta_one_per_regressor;
-        contrast_variance_allruns(i,:,:) = X.contrast_variance;
-        residual_allruns(i,:,:) = X.residual;
+        beta_contrast_allruns(i,:,:,:) = X.beta_contrast;
+        beta_one_per_regressor_allruns(i,:,:,:) = X.beta_one_per_regressor;
+        contrast_variance_allruns(i,:,:,:) = X.contrast_variance;
+        residual_allruns(i,:,:,:) = X.residual;
         dfs(i) = X.df;
     catch me
         print_error_message(me);
@@ -54,15 +56,15 @@ end
 clear X;
 
 % set beta contrast and residual to the average across runs
-beta_contrast = squeeze_dims( nanmean(beta_contrast_allruns, 1), 1); %#ok<NASGU>
-beta_one_per_regressor = squeeze_dims( nanmean(beta_one_per_regressor_allruns, 1), 1); %#ok<NASGU>
-residual = squeeze_dims( mean(residual_allruns, 1), 1); %#ok<NASGU>
+beta_contrast = squeeze_dims( nanmean(beta_contrast_allruns, 1), 1);
+beta_one_per_regressor = squeeze_dims( nanmean(beta_one_per_regressor_allruns, 1), 1);
+residual = squeeze_dims( mean(residual_allruns, 1), 1);
 
 % ols stats across runs
 [logP_fixed, contrast_variance_fixed] = ...
-    fixed_effects(beta_contrast_allruns, contrast_variance_allruns, dfs); %#ok<ASGLU>
+    fixed_effects(beta_contrast_allruns, contrast_variance_allruns, dfs);
 [logP_random, contrast_variance_random] = ...
-    random_effects(beta_contrast_allruns); %#ok<ASGLU>
+    random_effects(beta_contrast_allruns);
 
 % save results
 save(MAT_file_second_level, 'beta_contrast', 'logP_fixed', 'logP_random', ...

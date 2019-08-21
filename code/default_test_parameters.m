@@ -32,3 +32,8 @@ end
 if ~isfield(test_info, 'offset_delay')
     test_info.offset_delay = 1;
 end
+
+% number of time  points
+if ~isfield(test_info, 'n_tps')
+    test_info.n_tps = 1;
+end

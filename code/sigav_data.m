@@ -17,12 +17,16 @@ function [psc, mean_signal, T, voxels_without_NaN, null_response] = ...
 % 2018-05-28: Exclude voxels with mean timecourse near zero.
 % 
 % 2018-05-30: Add an optional tsnr threshold
+% 
+% 2019-08-20: Added ability to measure multiple timepoints in between onset
+% and offset so as to measure a signal averaged timecourse
 
 % optional arguments and defaults
 I.onset_delay = 5;
 I.offset_delay = 1;
 I.n_perms = 0;
 I.tsnr_threshold = 30;
+I.n_tps = 1;
 I = parse_optInputs_keyvalue(varargin, I);
 
 % analysis parameters
@@ -64,27 +68,33 @@ T = read_para(para_file);
 n_trials = length(T.onsets);
 n_TR = size(Y,1);
 t = (0:n_TR-1)*TR;
-response = nan(n_trials, n_voxels_without_NaN);
+response = nan(n_trials, n_voxels_without_NaN, I.n_tps);
 for i = 1:n_trials
-    xi = t >= T.onsets(i) + I.onset_delay ...
-        & t <= T.onsets(i) + T.durs(i) + I.offset_delay;
-    response(i,:) = mean(Y(xi,:),1);
+    if I.n_tps == 1
+        xi = t >= T.onsets(i) + I.onset_delay ...
+            & t <= T.onsets(i) + T.durs(i) + I.offset_delay;
+        response(i,:) = mean(Y(xi,:),1);
+    else
+        win = T.onsets(i) + linspace(I.onset_delay, T.durs(i) + I.offset_delay, I.n_tps)';
+        assert(win(1)>=t(1) && win(2)<=t(end));
+        response(i,:,:) = interp1(t, Y, win, 'linear')';
+    end
 end
 clear xi t nTR;
 
 %% Measure null and convert to psc
 
 % mean response to null
-% -> 1 x voxels
+% -> 1 x voxels x time
 xi = strcmp('NULL', T.conds);
 assert(sum(xi) > 0);
-null_response = mean(response(xi,:),1);
+null_response = mean(response(xi,:,:),1);
 clear xi;
 
 %% Remove trials without corresponding condition, except for NULL trials
 
 xi = ismember(T.conds, [P.condition_names(:); 'NULL']);
-response  = response(xi,:);
+response  = response(xi,:, :);
 T.conds = T.conds(xi,:);
 T.condition_indices = T.condition_indices(xi,:);
 T.onsets = T.onsets(xi,:);
@@ -94,7 +104,7 @@ clear xi;
 
 %% convert to psc
 
-% -> trials x voxels
-psc = 100 * (response - repmat(null_response, n_trials, 1)) ...
-    ./ repmat(null_response, n_trials, 1);
+% -> trials x voxels x timepoints
+null_response_replicated = repmat(null_response, [n_trials, 1, 1]);
+psc = 100 * (response - null_response_replicated) ./ null_response_replicated;
 
