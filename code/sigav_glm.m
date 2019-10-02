@@ -59,6 +59,7 @@ assert(length(T.onsets) == n_trials);
     nonzero_regressors, nonzero_contrasts, nonzero_conditions] = ...
     sigav_weights_and_contrasts(P, T);
 
+
 %% Optionally whiten data and apply whitening matrix to the regressors as well
 
 if I.whiten

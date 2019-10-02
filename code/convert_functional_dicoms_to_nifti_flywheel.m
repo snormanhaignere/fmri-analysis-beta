@@ -78,9 +78,16 @@ for i = 1:n_dicoms
     xi = ismember(fields, 'ImageNo');
     assert(sum(xi)==1);
     imagenumber(i) = str2double(values{xi});
+    clear xi fields values;
 end
 [~,xi] = sort(imagenumber);
-assert(all(xi==(1:n_dicoms)));
+dicoms = dicoms(xi);
+imagenumber = imagenumber(xi);
+clear xi;
+if ~(all(imagenumber==(1:n_dicoms)))
+    fprintf('Image numbers not as expected\n');
+    keyboard;
+end
 
 % remove extra dicoms
 [~, ~, nTR, ~] = read_functional_scan_parameters(exp,us,runtype,r);
