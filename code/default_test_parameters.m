@@ -37,3 +37,8 @@ end
 if ~isfield(test_info, 'n_tps')
     test_info.n_tps = 1;
 end
+
+% whether or not to use global mean centering
+if ~isfield(test_info, 'gmc')
+    test_info.gmc = NaN;
+end

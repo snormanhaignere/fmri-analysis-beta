@@ -210,7 +210,8 @@ function loc_stat = localizer_stat(...
     'plot_reliability', false, 'overwrite', localizer_info.overwrite, ...
     'combine_runs_before_fla', localizer_info.combine_runs_before_fla, ...
     'onset_delay', localizer_info.onset_delay, ...
-    'offset_delay', localizer_info.offset_delay);
+    'offset_delay', localizer_info.offset_delay, ...
+    'gmc', localizer_info.gmc);
 
 use_first_level = (length(localizer_runs_to_use) == 1 ...
     || localizer_info.combine_runs_before_fla);
@@ -295,6 +296,14 @@ for j = 1:n_localizers
     
     if ~isfield(localizer_info(j), 'offset_delay')
         localizer_info(j).offset_delay = 1;
+    end
+    
+    if ~isfield(localizer_info(j), 'offset_delay')
+        localizer_info(j).offset_delay = 1;
+    end
+    
+    if ~isfield(localizer_info(j), 'gmc')
+        localizer_info(j).gmc = NaN;
     end
     
 end

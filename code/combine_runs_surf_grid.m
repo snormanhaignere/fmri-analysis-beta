@@ -75,7 +75,15 @@ for i = 1:length(original_runs)
         
         % optionally detrend
         if I.detrend >= 0
-            D = detrend_poly(D, I.detrend, 'restore_mean', true);
+            % detrend
+            D_detrended = nan(size(D));
+            for j = 1:length(original_runs{i})
+                xi = run_index == j;
+                assert(sum(xi)>0);
+                D_detrended(xi,:) = detrend_poly(D(xi,:), I.detrend, 'restore_mean', false);
+            end
+            % add the global mean back
+            D = bsxfun(@plus, D_detrended, nanmean(D,1));
         end
         
         % convert back to grid

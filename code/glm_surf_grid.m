@@ -56,6 +56,7 @@ I.tsnr_threshold = 0;
 I.grid_flag = '';
 I.write_surf_file = false;
 I.n_tps = 1;
+I.gmc = NaN;
 [I, C] = parse_optInputs_keyvalue(varargin, I, 'empty_means_unspecified', true);
 if I.overwrite
     I.overwrite_first_level = true;
@@ -89,6 +90,10 @@ end
 
 if C.n_tps
     param_idstring = [param_idstring '_ntps' num2str(I.n_tps)];
+end
+
+if C.gmc
+    param_idstring = [param_idstring '_gmc' num2str(I.gmc)];
 end
 
 %% Directories / setup
@@ -205,6 +210,17 @@ for i = 1:n_run_sets
         'grid-' num2str(grid_spacing_mm) 'mm' '_' grid_roi '.mat'];
     if ~isempty(I.grid_flag)
         grid_file = strrep(grid_file, '.mat', ['_' I.grid_flag '.mat']);
+    end
+    if ~isnan(I.gmc)
+        gmc_grid_file = strrep(grid_file, '.mat', ['_gmc-' num2str(I.gmc) 'mm.mat']);
+        if exist(grid_file, 'file') && ~exist(gmc_grid_file, 'file') || I.overwrite
+            assert(length(fla_run_sets{i})==1);
+            global_mean_center(exp, us, runtype, fla_run_sets{i}, fwhm, grid_spacing_mm, grid_roi, I.gmc, ...
+                'overwrite', I.overwrite);
+        end
+        assert(exist(gmc_grid_file,'file')==2);
+        grid_file = gmc_grid_file;
+        clear gmc_grid_file;
     end
     
     % reformated data matrix to use as input to the GLM analysis below

@@ -56,7 +56,7 @@ end
 
 % read vertices and faces
 nvertices = 163842; 
-[vertices, faces] = freesurfer_read_surf([root_directory '/' 'freesurfer/myfsaverage/surf/' hemi '.inflated']);
+[vertices, faces] = freesurfer_read_surf([root_directory '/' 'freesurfer/myfsaverage/surf/' hemi '.inflated'], false);
 
 % set default color data based on gyral/sulcal divisions
 curv = read_curv([root_directory '/' 'freesurfer/myfsaverage/surf/' hemi '.curv']);
