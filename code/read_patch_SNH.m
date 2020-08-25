@@ -3,7 +3,12 @@ function patch = read_patch_SNH(pname,varargin)
 if ~strcmp(pname(end-3:end), '.asc')
     pname_asc = [pname '.asc'];
     if ~exist(pname_asc,'file') || optInputs(varargin,'overwrite');
-        unix_freesurfer_version('5.3.0',['mris_convert -p ' pname ' ' pname_asc]);
+        if ismac
+            version = 'darwin11.4.2';
+        else
+            version = '5.3.0';
+        end
+        unix_freesurfer_version(version,['mris_convert -p ' pname ' ' pname_asc]);
     end
 else
     pname_asc = pname;

@@ -29,6 +29,8 @@ function [patch_handle, light_handle] = plot_fsaverage_colordata_overlay(colorda
 % 
 % Created by Sam NH on 8/12/2015
 
+global root_directory;
+
 % read vertices and faces
 % nvertices = 163842; 
 [vertices, faces] = freesurfer_read_surf([root_directory '/' 'freesurfer/myfsaverage/surf/' hemi '.inflated']);

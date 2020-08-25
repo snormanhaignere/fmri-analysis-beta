@@ -13,6 +13,8 @@ global root_directory;
 % optional arguments and defaults
 I.overwrite = false;
 I.freesurfer_version = '5.3.0';
+I.localGI = false;
+I.runanyways = false;
 I = parse_optInputs_keyvalue(varargin, I);
 
 freesurfer_directory = [root_directory '/freesurfer'];
@@ -40,8 +42,13 @@ if ~exist(freesurfer_subject_directory,'dir')
     fprintf('Creating Freesurfer directory:\n\n%s\n\n', freesurfer_subject_directory);
 end
 
-if ~exist([freesurfer_subject_directory '/surf/rh.inflated'],'file') || I.overwrite
+flags = ' ';
+if I.localGI
+    flags = [flags '-localGI '];
+end
+
+if ~exist([freesurfer_subject_directory '/surf/rh.inflated'],'file') || I.overwrite || I.runanyways
     log_file = [log_directory '/recon-all_' subjid '.txt'];
-    unix_freesurfer_version(I.freesurfer_version, ['nohup recon-all -all -subjid ' subjid ' > ' log_file ' &']);
+    unix_freesurfer_version(I.freesurfer_version, ['nohup recon-all -all' flags '-subjid ' subjid ' > ' log_file ' &']);
     fprintf('Surface reconstruction begun\n\nCheck log-file for progress:\n\n%s\n', log_file);
 end

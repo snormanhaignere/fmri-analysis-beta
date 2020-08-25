@@ -40,12 +40,12 @@ function [color_data, patch_handle, light_handle] = ...
 global root_directory;
 
 % default colormap is parula
-if nargin < 3
+if nargin < 3 || isempty(color_map_to_plot)
     color_map_to_plot = 'parula';
 end
 
 % by default plots the central 95% of the distribution
-if nargin < 4
+if nargin < 4 || isempty(color_range)
     [Nx,x] = hist(surface_values,100);
     Cx = cumsum(Nx/sum(Nx));
     [~,xi] = unique(Cx);
